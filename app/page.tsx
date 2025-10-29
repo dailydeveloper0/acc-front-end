@@ -16,6 +16,8 @@ import { downloadCSV } from "@/utils/csv";
 import type { Agent, CallRow, InsightsPayload } from "@/types";
 
 const base = "http://acc.genriseyouthcenter.com/api/v1";
+// const base = "http://localhost:3003/api/v1";
+
 
 function NumberPill({
   label,
@@ -56,68 +58,140 @@ export default function Admin() {
   }, []);
 
   // --- Pages inline for brevity ---
+  // function DashboardPage() {
+  //   if (!insights)
+  //     return <div className="bg-white p-4 rounded shadow">Loading…</div>;
+  //   const total = insights.chart.callsTrend.reduce((s, n) => s + n, 0);
+  //   return (
+  //     <div className="space-y-4">
+  //       <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+  //         <KPICard
+  //           title="Total Calls (7d)"
+  //           value={total}
+  //           icon={Phone}
+  //           color="border-indigo-500"
+  //         />
+  //         <KPICard
+  //           title="Agents Active"
+  //           value={agents.filter((a) => a.status === "Active").length}
+  //           icon={Users}
+  //           color="border-green-500"
+  //         />
+  //         <KPICard
+  //           title="Avg Duration"
+  //           value={`${(
+  //             calls.reduce((s, c) => s + Number(c.duration || 0), 0) /
+  //             (calls.length || 1)
+  //           ).toFixed(1)} min`}
+  //           icon={Clock}
+  //           color="border-blue-500"
+  //         />
+  //         <KPICard
+  //           title="Completion Rate"
+  //           value={`${(
+  //             (calls.filter((c) => c.status === "Completed").length /
+  //               (calls.length || 1)) *
+  //             100
+  //           ).toFixed(1)}%`}
+  //           icon={CheckCircle2}
+  //           color="border-orange-500"
+  //         />
+  //       </div>
+  //       <div className="bg-white rounded-xl shadow p-4">
+  //         <div className="flex items-center justify-between mb-2">
+  //           <h2 className="font-semibold">Weekly Call Trend</h2>
+  //           <NumberPill label="Goal" value="50 calls" />
+  //         </div>
+  //         <div className="flex gap-1 h-24 items-end">
+  //           {insights.chart.callsTrend.map((v, i) => (
+  //             <div key={i} className="bg-indigo-500/30 flex-1 relative">
+  //               <div
+  //                 className="absolute bottom-0 left-0 w-full bg-indigo-600 rounded"
+  //                 style={{
+  //                   height: `${
+  //                     (v / Math.max(...insights.chart.callsTrend)) * 100
+  //                   }%`,
+  //                 }}
+  //               />
+  //             </div>
+  //           ))}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  interface DashboardData {
+  active_agents: number;
+  total_calls: number;
+  avg_duration: number;
+  completion_rate: string;
+}
   function DashboardPage() {
-    if (!insights)
-      return <div className="bg-white p-4 rounded shadow">Loading…</div>;
-    const total = insights.chart.callsTrend.reduce((s, n) => s + n, 0);
-    return (
-      <div className="space-y-4">
-        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <KPICard
-            title="Total Calls (7d)"
-            value={total}
-            icon={Phone}
-            color="border-indigo-500"
-          />
-          <KPICard
-            title="Agents Active"
-            value={agents.filter((a) => a.status === "Active").length}
-            icon={Users}
-            color="border-green-500"
-          />
-          <KPICard
-            title="Avg Duration"
-            value={`${(
-              calls.reduce((s, c) => s + Number(c.duration || 0), 0) /
-              (calls.length || 1)
-            ).toFixed(1)} min`}
-            icon={Clock}
-            color="border-blue-500"
-          />
-          <KPICard
-            title="Completion Rate"
-            value={`${(
-              (calls.filter((c) => c.status === "Completed").length /
-                (calls.length || 1)) *
-              100
-            ).toFixed(1)}%`}
-            icon={CheckCircle2}
-            color="border-orange-500"
-          />
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const res = await fetch(`${base}/dashboard`);
+        const json = await res.json();
+        setDashboardData(json.data);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading || !dashboardData) {
+    return <div className="bg-white p-4 rounded shadow">Loading…</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KPICard
+          title="Total Calls"
+          value={dashboardData.total_calls}
+          icon={Phone}
+          color="border-indigo-500"
+        />
+        <KPICard
+          title="Agents Active"
+          value={dashboardData.active_agents}
+          icon={Users}
+          color="border-green-500"
+        />
+        <KPICard
+          title="Avg Duration"
+          value={`${dashboardData.avg_duration} min`}
+          icon={Clock}
+          color="border-blue-500"
+        />
+        <KPICard
+          title="Completion Rate"
+          value={dashboardData.completion_rate}
+          icon={CheckCircle2}
+          color="border-orange-500"
+        />
+      </div>
+
+      <div className="bg-white rounded-xl shadow p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-semibold">Weekly Call Trend</h2>
+          <NumberPill label="Goal" value="50 calls" />
         </div>
-        <div className="bg-white rounded-xl shadow p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="font-semibold">Weekly Call Trend</h2>
-            <NumberPill label="Goal" value="50 calls" />
-          </div>
-          <div className="flex gap-1 h-24 items-end">
-            {insights.chart.callsTrend.map((v, i) => (
-              <div key={i} className="bg-indigo-500/30 flex-1 relative">
-                <div
-                  className="absolute bottom-0 left-0 w-full bg-indigo-600 rounded"
-                  style={{
-                    height: `${
-                      (v / Math.max(...insights.chart.callsTrend)) * 100
-                    }%`,
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+        <div className="h-24 flex items-center justify-center text-gray-500">
+          No trend data available
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   function LiveCallsPage() {
     const [q, setQ] = useState("");
