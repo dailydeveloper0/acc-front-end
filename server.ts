@@ -2,7 +2,7 @@ import { createServer, IncomingMessage, ServerResponse } from "http";
 import next from "next";
 import { parse, UrlWithParsedQuery } from "url";
 
-const port: number = Number(process.env.PORT) || 3000;
+const port: number = Number(process.env.PORT) || 3001;
 const dev: boolean = process.env.NODE_ENV !== "production";
 
 const app = next({ dev });
