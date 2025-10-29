@@ -15,7 +15,7 @@ import {
 import { downloadCSV } from "@/utils/csv";
 import type { Agent, CallRow, InsightsPayload } from "@/types";
 
-const base = process.env.REAL_BACKEND_BASE;
+const base = "http://acc.genriseyouthcenter.com/api/v1";
 
 function NumberPill({
   label,
@@ -245,7 +245,7 @@ export default function Admin() {
       act: "start" | "stop" | "restart" | "config"
     ) {
       try {
-        const r = await fetch(`http://localhost:3003/api/v1/agents/${id}`, {
+        const r = await fetch(`${base}/agents/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: act }),
@@ -273,7 +273,7 @@ export default function Admin() {
       console.log(newName)
       if (!newName.trim()) return;
       try {
-        const r = await fetch("http://localhost:3003/api/v1/agents", {
+        const r = await fetch(`${base}/agents`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: newName }),
@@ -287,12 +287,6 @@ export default function Admin() {
       } catch(e) {
         console.log(e);
       }
-      // const id = Math.max(0, ...agents.map((a) => a.id)) + 1;
-      // setAgents((prev) => [
-      //   ...prev,
-      //   { id, name: newName, status: "Idle", calls: 0, uptime: 100 },
-      // ]);
-      // setNewName("");
     }
     return (
       <div className="bg-white p-4 rounded-xl shadow space-y-2">
