@@ -13,7 +13,7 @@ export async function GET() {
     }
   } catch(e) {
     console.log(e)
-    return [];
+    return NextResponse.json([]);
   }
   // return NextResponse.json([
   //   { id: 1, name: "Fyn the Fox", status: "Active", calls: 7, uptime: 99.2 },
