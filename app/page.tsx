@@ -460,8 +460,10 @@ export default function Admin() {
   }
 
   function InsightsPage() {
-    if (!insights)
+    if (insights == undefined)
       return <div className="bg-white p-4 rounded shadow">Loading…</div>;
+     if (insights == null)
+      return <div className="bg-white p-4 rounded shadow">Loading…123</div>;
     const [lvl, setLvl] = useState<"All" | "High" | "Medium" | "Low">("All");
     const [q, setQ] = useState("");
     const filtered = insights.alerts.filter(
