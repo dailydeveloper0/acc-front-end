@@ -15,8 +15,8 @@ import {
 import { downloadCSV } from "@/utils/csv";
 import type { Agent, CallRow, InsightsPayload } from "@/types";
 
-const base = "https://acc.arifhomes.com/api/v1";
-// const base = "http://localhost:3003/api/v1";
+// const base = "https://acc.arifhomes.com/api/v1";
+const base = "http://localhost:3003/api/v1";
 
 
 function NumberPill({
@@ -121,74 +121,103 @@ export default function Admin() {
   //   );
   // }
 
-  interface DashboardData {
-  active_agents: number;
-  total_calls: number;
-  avg_duration: number;
-  completion_rate: string;
-}
   function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    async function fetchDashboardData() {
       try {
-        const res = await fetch(`${base}/dashboard`);
+        const res = await fetch(`${base}/dashboard`); // or `${process.env.NEXT_PUBLIC_API_URL}/dashboard`
         const json = await res.json();
-        setDashboardData(json.data);
+        setData(json.data);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchDashboardData();
   }, []);
 
-  if (loading || !dashboardData) {
+  if (loading)
     return <div className="bg-white p-4 rounded shadow">Loading…</div>;
-  }
+
+  if (!data)
+    return (
+      <div className="bg-white p-4 rounded shadow text-red-500">
+        Failed to load dashboard data.
+      </div>
+    );
+
+  const { active_agents, total_calls, avg_duration, completion_rate, calls_trend } = data;
+  console.log(calls_trend)
+  const maxValue = Math.max(...calls_trend);
+  const safeMax = maxValue > 0 ? maxValue : 1; // prevent divide by zero
 
   return (
     <div className="space-y-4">
       <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KPICard
-          title="Total Calls"
-          value={dashboardData.total_calls}
+          title="Total Calls (7d)"
+          value={total_calls}
           icon={Phone}
           color="border-indigo-500"
         />
         <KPICard
           title="Agents Active"
-          value={dashboardData.active_agents}
+          value={active_agents}
           icon={Users}
           color="border-green-500"
         />
         <KPICard
           title="Avg Duration"
-          value={`${dashboardData.avg_duration} min`}
+          value={`${avg_duration} min`}
           icon={Clock}
           color="border-blue-500"
         />
         <KPICard
           title="Completion Rate"
-          value={dashboardData.completion_rate}
+          value={completion_rate}
           icon={CheckCircle2}
           color="border-orange-500"
         />
       </div>
 
       <div className="bg-white rounded-xl shadow p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold">Weekly Call Trend</h2>
-          <NumberPill label="Goal" value="50 calls" />
+  <div className="flex items-center justify-between mb-2">
+    <h2 className="font-semibold">Weekly Call Trend</h2>
+    <NumberPill label="Goal" value="50 calls" />
+  </div>
+
+  <div className="flex gap-2 h-32 items-end justify-between">
+    {calls_trend.map((v: number, i: number) => {
+      const maxValue = Math.max(...calls_trend);
+      const safeMax = maxValue > 0 ? maxValue : 1;
+      // Minimum bar height for visibility
+      const heightPercent = (v / safeMax) * 100 || 10;
+
+      return (
+        <div
+          key={i}
+          className="flex-1 flex flex-col items-center justify-end"
+        >
+          <div
+            className="w-6 rounded-t-md bg-indigo-500 transition-all duration-500"
+            style={{
+              height: `${Math.max(heightPercent, 15)}%`, // ensure visible even if equal values
+              minHeight: "15px", // visible when v=0
+            }}
+          ></div>
+          <span className="text-xs text-gray-500 mt-1 font-medium">
+            {v}
+          </span>
         </div>
-        <div className="h-24 flex items-center justify-center text-gray-500">
-          No trend data available
-        </div>
-      </div>
+      );
+    })}
+  </div>
+</div>
     </div>
   );
 }
