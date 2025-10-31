@@ -11,12 +11,15 @@ export async function GET() {
       const jsonData = await r.json()
       return NextResponse.json(jsonData.data.agents);
     }
-  } catch {}
-  return NextResponse.json([
-    { id: 1, name: "Fyn the Fox", status: "Active", calls: 7, uptime: 99.2 },
-    { id: 2, name: "Luna", status: "Idle", calls: 5, uptime: 96.8 },
-    { id: 3, name: "Aiden", status: "Error", calls: 2, uptime: 92.5 },
-  ]);
+  } catch(e) {
+    console.log(e)
+    return [];
+  }
+  // return NextResponse.json([
+  //   { id: 1, name: "Fyn the Fox", status: "Active", calls: 7, uptime: 99.2 },
+  //   { id: 2, name: "Luna", status: "Idle", calls: 5, uptime: 96.8 },
+  //   { id: 3, name: "Aiden", status: "Error", calls: 2, uptime: 92.5 },
+  // ]);
 }
 
 export async function POST(req: Request) {
