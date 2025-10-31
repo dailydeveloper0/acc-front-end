@@ -15,7 +15,7 @@ import {
 import { downloadCSV } from "@/utils/csv";
 import type { Agent, CallRow, InsightsPayload } from "@/types";
 
-const base = "http://acc.genriseyouthcenter.com/api/v1";
+const base = "https://acc.arifhomes.com/api/v1";
 // const base = "http://localhost:3003/api/v1";
 
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-// const base = process.env.NEXT_BACKEND_URL;
-const base = "http://localhost:3003/api/v1";
+const base = process.env.NEXT_BACKEND_URL;
+// const base = "http://localhost:3003/api/v1";
 
 export async function PUT(
   req: Request,
